@@ -39,7 +39,7 @@ var leaderboards = module.exports = {
             limit: options.perpage,
             skip: (options.page - 1) * options.perpage,
             sort: {},
-            cache: true,
+            cache: false,
             cachetime: 120
         };
 
@@ -253,7 +253,7 @@ var leaderboards = module.exports = {
                     table: options.table
                 },
                 sort: options.highest ? {score : -1} : {score: 1},
-                cache: true,
+                cache: false,
                 cachetime: 120
             };
 			
