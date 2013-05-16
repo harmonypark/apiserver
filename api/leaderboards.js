@@ -161,6 +161,7 @@ var leaderboards = module.exports = {
                          options.source);
         score.points = options.points;
         score.date = datetime.now;
+        score.dateLocalFormatted = datetime.format(null, "default", false);
 		
         // check bans
 
