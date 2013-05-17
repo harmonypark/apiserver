@@ -4,9 +4,10 @@ var output = require(__dirname + "/output.js"),
 	testing = process.env.testing || false;
 
 module.exports = {
+
 	now: function(payload, request, response, testcallback) {
 
-        var date = new Date.now();
+        var date = Date.now();
 
         var r = output.end(payload, response, date, errorcodes.NoError);
 
@@ -14,4 +15,5 @@ module.exports = {
             testcallback(null, r);
         }
 	}
+
 };
