@@ -10,6 +10,7 @@ var url = require("url"),
         leaderboards: require(__dirname + "/leaderboards.js"),
         playerlevels: require(__dirname + "/playerlevels.js"),
 		achievements: require(__dirname + "/achievements.js")
+        date: require(__dirname + "/date.js")
     };
 
 module.exports = {
