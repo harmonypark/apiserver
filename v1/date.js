@@ -9,7 +9,7 @@ module.exports = {
 
         var date = Date.now();
 
-        var r = output.end(payload, response, date, errorcodes.NoError);
+        var r = output.end(payload, response, { now: date }, errorcodes.NoError);
 
         if(testing && testcallback) {
             testcallback(null, r);
