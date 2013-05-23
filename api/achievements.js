@@ -79,7 +79,12 @@ var achievements = module.exports = {
         }
 		
 		// modes
-        // date mode
+		if(!options.mode) {
+			options.mode = "alltime";
+		} else {
+			options.mode = options.mode.toLowerCase();
+		}
+
         switch(options.mode) {
             case "today":
                 query.filter.date = {"$gte": datetime.now - (24 * 60 * 60)};
@@ -318,6 +323,8 @@ var achievements = module.exports = {
 					achievement.friends = friends;
 				}
 				
+				delete achievement.achievementkey;
+				
 				results.push(achievement);
 			}
 			
@@ -391,22 +398,6 @@ var achievements = module.exports = {
 	        date: datetime.now
 		};
 		
-        // insert
-        if(options.hasOwnProperty("allowduplicates") && options.allowduplicates) {
-
-            db.playtomic.achievements_players.insert({doc: achievement, safe: true}, function(error, item) {
-
-                if(error) {
-                    callback("unable to insert achievement: " + error + " (api.achievements.save:178)", errorcodes.GeneralError);
-                    return;
-                }
-
-                callback(null, errorcodes.NoError);
-            });
-
-            return;
-        }
-
         // check for duplicates, if there is none we can insert otherwise we require 'overwrite'
         var dupequery = {
             filter: {
@@ -436,28 +427,47 @@ var achievements = module.exports = {
                 return;
             }
 			
+			// do we allow duplicates?
+	        if(options.hasOwnProperty("allowduplicates") && options.allowduplicates) {
+
+	            db.playtomic.achievements_players.insert({doc: achievement, safe: true}, function(error, item) {
+
+	                if(error) {
+	                    callback("unable to insert achievement: " + error + " (api.achievements.save:178)", errorcodes.GeneralError);
+	                    return;
+	                }
+
+	                callback(null, errorcodes.AlreadyHadAchievementSaved);
+	            });
+
+	            return;
+	        }
+			
 			// can we overwrite?
-			if(!options.overwrite) {
-				callback(null, errorcodes.AlreadyHadAchievement);
+			 if(options.hasOwnProperty("overwrite") && options.overwrite) {
+
+				achievement._id = items[0]._id;
+			
+	            var query = {
+	                filter: { _id: achievement._id },
+	                doc: achievement
+	            };
+			
+	            db.playtomic.achievements_players.update(query, function(error, item) {
+
+	                if(error) {
+	                    callback("unable to update achievement: " + error + " (api.achievements.save:208)", errorcodes.GeneralError);
+	                    return;
+	                }
+
+	                callback(null, errorcodes.AlreadyHadAchievementSaved);
+	            });
+				
 				return;
 			}
 			
-			achievement._id = items[0]._id;
-			
-            var query = {
-                filter: { _id: achievement._id },
-                doc: achievement
-            };
-			
-            db.playtomic.achievements_players.update(query, function(error, item) {
-
-                if(error) {
-                    callback("unable to update achievement: " + error + " (api.achievements.save:208)", errorcodes.GeneralError);
-                    return;
-                }
-
-                callback(null, errorcodes.NoError);
-            });
+			// if we're still here we got rejected
+			callback("already had achievement and no overwrite or allowduplicate options were set.", errorcodes.AlreadyHadAchievementNotSaved);
         });
     }
 };
@@ -468,6 +478,7 @@ function achievementIndex(publickey) {
 	for(var i=0; i<achievements.length; i++) {
 		index[achievements[i].achievementid] = achievements[i];
 	}
+	
 	return JSON.parse(JSON.stringify(index));
 }
 

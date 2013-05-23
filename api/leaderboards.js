@@ -57,7 +57,7 @@ var leaderboards = module.exports = {
         // filtering for playerids
 		var playerids = [];
 		
-        if(options.playerid) {
+        if(options.playerid && !options.excludeplayerid) {
             playerids.push(options.playerid);
         }
         
@@ -70,15 +70,21 @@ var leaderboards = module.exports = {
         }
 
         // date mode
+		if(!options.mode) {
+			options.mode = "alltime";
+		} else {
+			options.mode = options.mode.toLowerCase();
+		}
+		
         switch(options.mode) {
             case "today":
                 query.filter.date = {"$gte": datetime.now - (24 * 60 * 60)};
                 break;
-            
+        
            case "last7days":
                query.filter.date = {"$gte": (datetime.now - (7 * 24 * 60 * 60))};
                 break;
-            
+        
             case "last30days":
                 query.filter.date = {"$gte": (datetime.now - (30 * 24 * 60 * 60))};
                 break;
@@ -122,8 +128,8 @@ var leaderboards = module.exports = {
 			options.source = options.source.indexOf("://") > -1 ? utils.baseurl(options.source) : options.source;
 		}
 
-        if(!options.name) {
-            callback("no name (" + options.name + ")", errorcodes.InvalidName);
+        if(!options.playername) {
+            callback("no name (" + options.playername + ")", errorcodes.InvalidName);
             return;
         }
 
@@ -156,7 +162,7 @@ var leaderboards = module.exports = {
         score.hash = md5(options.publickey + 
 						 options.ip + "." +
                          options.table + "." +
-                         options.name + "." +
+                         options.playername + "." +
                          options.playerid + "." +
                          options.highest + "." +
                          options.source);
@@ -267,9 +273,11 @@ var leaderboards = module.exports = {
                 query.filter.points = {"$lte": options.points};
             }
 
-            for(var x in options.fields) {
-                query.filter["fields." + x] = options.fields[x];
-            }
+			if(options.filters) {
+	            for(var x in options.filters) {
+	                query.filter["fields." + x] = options.filters[x];
+	            }
+			}
 
             if(options.friendslist) {
                 if(options.friendslist.length > 100) {
@@ -277,9 +285,12 @@ var leaderboards = module.exports = {
                 }
 
                 query.filter.playerid = { $in: options.friendslist }
-
             }
-
+			
+			if(options.source) {
+				query.filter.source = options.source.indexOf("://") > -1 ? utils.baseurl(options.source) : options.source;
+			}
+			
             var serrorcode = errorcode;
 			
             db.playtomic.leaderboard_scores.count(query, function(error, numscores) {

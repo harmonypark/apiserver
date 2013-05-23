@@ -10,7 +10,8 @@ var url = require("url"),
         leaderboards: require(__dirname + "/leaderboards.js"),
         playerlevels: require(__dirname + "/playerlevels.js"),
 		achievements: require(__dirname + "/achievements.js"),
-        date: require(__dirname + "/date.js")
+        date: require(__dirname + "/date.js"),
+		newsletter: require(__dirname + "/newsletter.js")
     };
 
 module.exports = {
@@ -68,8 +69,6 @@ module.exports = {
             return output.terminate(payload, response, 1, "Invalid posted data (router.js:72)");
         }
 		
-		console.log(decrypted);
-
         var payload;
 
         try {
@@ -107,7 +106,7 @@ module.exports = {
                 testcallback(false);
             }
 
-            return output.terminate(payload, response, 1, "Section '" + payload.section + "' has been disabled for this game (router.js:113)");
+            return output.terminate(payload, response, sections[payload.section].sectionCode, "Section '" + payload.section + "' has been disabled for this game (router.js:113)");
         }
 
         if(!sections[payload.section] || !sections[payload.section][payload.action]) {

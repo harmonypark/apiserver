@@ -1,7 +1,8 @@
 var express = require("express"),
     querystring = require("querystring"),
-    v1 = require(__dirname + "/v1/router.js");
-    
+    v1 = require(__dirname + "/v1/router.js"),
+	database = require(__dirname + "/api/database.js"); // to trigger the setup
+	
 var app = express.createServer();
 
 // Basic request preparation and stuffing post data into req
@@ -40,11 +41,11 @@ app.configure(function(){
     app.use(app.router);
 });
 
-/*app.configure("production", function(){
+app.configure("production", function(){
     process.on("uncaughtException", function (exceptionmessage) {
         console.log("EXCEPTION: \n" + exceptionmessage);
     });
-});*/
+});
 
 // start
 var port = process.env.PORT || 3000;

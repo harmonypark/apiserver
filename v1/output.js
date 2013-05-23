@@ -17,6 +17,7 @@ module.exports = {
         var jstr = "{\"success\": false, \"errorcode\": " + errorcode + ", \"exceptionmessage\": \"" + exceptionmessage + "\"}";
         response.writeHead(200, JSON_HEADER);
         response.end(jstr);
+		//console.log(jstr);
         return jstr;
     },
 
@@ -59,6 +60,7 @@ module.exports = {
         var jstr = JSON.stringify(json);
         response.writeHead(200, JSON_HEADER);
         response.end(jstr);
+		//console.log(payload.section + " -> " + payload.action + "\n" + JSON.stringify(payload) + "\n" + jstr + "\n");
         return jstr;
     }
 };
