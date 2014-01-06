@@ -1,4 +1,5 @@
-var config = require(__dirname + "/config.js");
+var config = require(__dirname + "/config.js"),
+datetime = require(__dirname + "/datetime.js")
 
 // setup
 var mongodb = require("mongodb");
@@ -31,15 +32,23 @@ db.open(function (error, cnn) {
 		jobs.push(function() { 
 			cnn.collection("gamevars").createIndex([["publickey", 1], ["name", 1]], next); 
 		});
-		jobs.push(function() { 
-			cnn.collection("leaderboard_scores").createIndex([["publickey", 1], ["points", -1]], next); 
-		});
-		jobs.push(function() { 
-			cnn.collection("leaderboard_scores").createIndex([["publickey", 1], ["date", -1]], next); 
-		});
+
 		jobs.push(function() { 
 			cnn.collection("leaderboard_scores").createIndex([["publickey", 1], ["hash", 1]], next); 
 		});
+
+		// advanced users may override the default index 
+		// creation for leaderboards that are using their 
+		// own exact-match indexing
+		if(process.env.disable_default_score_indexes == null) {
+			jobs.push(function() { 
+				cnn.collection("leaderboard_scores").createIndex([["publickey", 1], ["points", -1]], next); 
+			});
+			jobs.push(function() { 
+				cnn.collection("leaderboard_scores").createIndex([["publickey", 1], ["date", -1]], next); 
+			});
+		}
+
 		jobs.push(function() { 
 			cnn.collection("leaderboard_bans").createIndex([["publickey", 1], ["hash", 1]], next); 
 		});
@@ -106,6 +115,7 @@ db.open(function (error, cnn) {
 		];
 		
 		scores.forEach(function(scoredata) {
+
 			jobs.push(function() { 
 				
 		        var score = {
@@ -115,6 +125,7 @@ db.open(function (error, cnn) {
 		            points: scoredata.points,
 		            playerid: scoredata.playerid.toString(),
 					table: "scores",
+					date: datetime.now,
 		            fields: {}
 		        };
 				
